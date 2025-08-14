@@ -1,5 +1,14 @@
 include /etc/os-release
 
+include stack/minikube/makefile
+
+# Make flags
+MAKEFLAGS += --no-print-directory
+
+# Folders absolute path
+FOLDER_PROJECT := $(shell pwd)
+FOLDER_DEPLOYMENT := $(FOLDER_PROJECT)/deployment
+
 ARCH := $(shell dpkg --print-architecture)
 
 install_docker:
@@ -36,13 +45,29 @@ install_minikube:
 	curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
 	sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
 
+local-stack-create-folders:
+	@echo "[local-stack-create-folders] Starting..."
+	@mkdir -p $(FOLDER_DEPLOYMENT)
+	@echo "[local-stack-create-folders] Done!"
+
+
 install:
 	make install_docker
 	make install_kubectl
 	make install_kubectx
 	make install_k9s
 	make install_minikube
+	make local-stack-create-folders
 
-print:
-	@echo "$(ARCH)"
-	@echo "$(OS_CODENAME)"
+local-stack-deploy:
+	@echo "[local-stack-deploy] Deploying..."
+
+	@echo "[local-stack-deploy] Printing all variables."
+	@make minikube-variables
+
+	@echo "[local-stack-deploy] Starting Deployment..."
+	@make minikube-start
+
+local-stack-remove:
+	@echo "[local-stack-remove] Removing the local deployment..."
+	@make minikube-remove
