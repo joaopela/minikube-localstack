@@ -1,0 +1,9 @@
+postgresql:
+  postgresqlPassword: superset
+  
+configOverrides:
+  secret: |
+    SECRET_KEY = 'lDOyuo9qRd9p15qN9zDiFnE5jh7aVf7H8x9v6c5jpqOwJaeaOtnSpCvV'
+
+image:
+  repository: apache/superset

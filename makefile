@@ -1,6 +1,7 @@
 include /etc/os-release
 
 include stack/minikube/makefile
+include stack/apache_superset/makefile
 
 # Make flags
 MAKEFLAGS += --no-print-directory
@@ -11,7 +12,7 @@ FOLDER_DEPLOYMENT := $(FOLDER_PROJECT)/deployment
 
 ARCH := $(shell dpkg --print-architecture)
 
-install_docker:
+install-docker:
 	# Add Docker's official GPG key:
 	sudo apt update
 	sudo apt install ca-certificates curl
@@ -31,42 +32,50 @@ install_docker:
 	# Adding used to docker group	
 	sudo usermod -aG docker $(USER) && newgrp docker
 
-install_kubectl:
+install-kubectl:
 	sudo snap install --classic kubectl
 
-install_kubectx:
+install-kubectx:
 	sudo apt install kubectx
 
-install_k9s:
+install-k9s:
 	sudo snap install k9s --channel=latest/stable
 	sudo ln -s /snap/k9s/current/bin/k9s /snap/bin/k9s
 
-install_minikube:
+install-minikube:
 	curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
 	sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+
+install-helm:
+	sudo snap install --classic helm
 
 local-stack-create-folders:
 	@echo "[local-stack-create-folders] Starting..."
 	@mkdir -p $(FOLDER_DEPLOYMENT)
 	@echo "[local-stack-create-folders] Done!"
 
-
 install:
-	make install_docker
-	make install_kubectl
-	make install_kubectx
-	make install_k9s
-	make install_minikube
+	make install-docker
+	make install-kubectl
+	make install-kubectx
+	make install-k9s
+	make install-minikube
+	make install-helm
 	make local-stack-create-folders
 
 local-stack-deploy:
 	@echo "[local-stack-deploy] Deploying..."
+
+	@echo $(FOLDER_PROJECT)
 
 	@echo "[local-stack-deploy] Printing all variables."
 	@make minikube-variables
 
 	@echo "[local-stack-deploy] Starting Deployment..."
 	@make minikube-start
+
+	@echo "[local-stack-deploy] Starting Apache Superset..."
+	@make superset-deploy
 
 local-stack-remove:
 	@echo "[local-stack-remove] Removing the local deployment..."
